@@ -3,33 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bagikan Lokasi ke WhatsApp (Dengan Izin)</title>
+  <title>Bagikan Lokasi ke WhatsApp</title>
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 24px; line-height: 1.5; }
-    button { padding: 12px 16px; border: 0; border-radius: 12px; cursor: pointer; }
-    #status { margin: 12px 0; }
-    .row { margin: 8px 0; }
-    .box { padding: 12px; border: 1px solid #ccc; border-radius: 12px; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; line-height: 1.5; background:#f7f9fc; }
+    h1 { color:#333; }
+    button { padding: 12px 20px; border: 0; border-radius: 12px; cursor: pointer; background:#0066cc; color:white; font-size:16px; }
+    button:disabled { background:#aaa; cursor:not-allowed; }
+    #status { margin: 12px 0; font-weight:bold; }
+    .box { padding: 12px; border: 1px solid #ccc; border-radius: 12px; background:#fff; margin-bottom:12px; }
   </style>
 </head>
 <body>
   <h1>Bagikan Lokasi ke WhatsApp</h1>
-  <p>Halaman ini akan meminta <b>izin lokasi</b>. Setelah itu, tekan tombol untuk mengirim lokasimu ke WhatsApp.</p>
+  <p>Halaman ini akan meminta <b>izin lokasi</b>. Setelah itu, tekan tombol untuk mengirim lokasimu ke WhatsApp nomor admin.</p>
 
-  <div id="status" class="row">Menunggu izin lokasi…</div>
+  <div id="status">Menunggu izin lokasi…</div>
 
   <div class="box">
-    <div class="row">Latitude: <span id="lat">-</span></div>
-    <div class="row">Longitude: <span id="lng">-</span></div>
-    <div class="row">Akurasi (± m): <span id="acc">-</span></div>
-    <div class="row">Waktu: <span id="ts">-</span></div>
-    <div class="row"><a id="gmap" href="#" target="_blank" rel="noopener">Buka di Google Maps</a></div>
-  </div>
-
-  <div class="row">
-    <!-- Ganti 62812xxxxxxx dengan nomor WhatsApp penerima (format internasional tanpa +).
-         Atau kosongkan untuk membuka WhatsApp dan memilih kontak secara manual. -->
-    <input id="waNumber" placeholder="Nomor WA tujuan, mis. 62812xxxxxxx" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;">
+    <div>Latitude: <span id="lat">-</span></div>
+    <div>Longitude: <span id="lng">-</span></div>
+    <div>Akurasi (± m): <span id="acc">-</span></div>
+    <div>Waktu: <span id="ts">-</span></div>
+    <div><a id="gmap" href="#" target="_blank" rel="noopener">Buka di Google Maps</a></div>
   </div>
 
   <button id="sendBtn" disabled>Kirim Lokasi via WhatsApp</button>
@@ -57,7 +52,7 @@
     }
 
     function onError(err){
-      el('status').textContent = 'Gagal mendapatkan lokasi: ' + err.message +
+      el('status').textContent = '❌ Gagal mendapatkan lokasi: ' + err.message +
         '. Pastikan GPS/Location aktif dan beri izin pada browser.';
     }
 
@@ -75,9 +70,8 @@
       const mapUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
       const text =
         `Ini lokasiku sekarang:%0A- Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}%0A- Akurasi: ±${Math.round(accuracy)} m%0A- Waktu: ${formatTS(ts)}%0A${encodeURIComponent(mapUrl)}`;
-      const number = el('waNumber').value.trim();
-      const base = number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`;
-      const url = base + text;
+      const number = "62895807284400"; // nomor WA tujuan (ganti sesuai kebutuhan)
+      const url = `https://wa.me/${number}?text=${text}`;
       window.location.href = url;
     });
   </script>
