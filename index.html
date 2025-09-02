@@ -1,63 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Bagikan Lokasi</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background:#f9f9f9; }
-    h1 { color:#333; }
-    #status { margin-top:20px; font-weight:bold; white-space: pre-line; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Lokasi</title>
 </head>
 <body>
-  <h1>Bagikan Lokasi Anda</h1>
-  <p>Silakan klik <b>Izinkan</b> saat browser meminta akses lokasi. Data akan otomatis tersimpan.</p>
-  <p id="status">⏳ Menunggu izin lokasi...</p>
+  <h2>Mengambil lokasi Anda...</h2>
+  <p id="status">Mohon izinkan akses lokasi.</p>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJdhZRvF-3LPOWxLgkOXpWzSGo5UlgAWv9h4vn4luaid4WQdNtHQagEOmJrD-iqvcv/exec"; // ganti dengan URL Web App
+    // Ganti dengan URL Web App dari Google Script
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx8YQGIMnyEPAWJNRseAWhDEk00pGCdDr6PXOC3SUc6xeXoL53YKK9_vNsNUHwmh5Rc/exec";
 
-    function sendData(lat, lng, acc, ts) {
-      fetch(SCRIPT_URL, {
+    function kirimLokasi(lat, lon) {
+      fetch(scriptURL, {
         method: "POST",
-        body: JSON.stringify({
-          latitude: lat,
-          longitude: lng,
-          accuracy: acc,
-          timestamp: ts,
-          userAgent: navigator.userAgent
-        }),
+        body: JSON.stringify({ latitude: lat, longitude: lon }),
         headers: { "Content-Type": "application/json" }
       })
-      .then(r => r.text())
+      .then(res => res.text())
       .then(txt => {
-        document.getElementById("status").innerText =
-          "✅ Lokasi berhasil terkirim!\n" +
-          "Latitude: " + lat + "\nLongitude: " + lng +
-          "\nAkurasi: ±" + acc + " m\nWaktu: " + ts + "\n\nRespon server: " + txt;
+        document.getElementById("status").innerText = "Lokasi berhasil dikirim!";
       })
       .catch(err => {
-        document.getElementById("status").innerText = "❌ Gagal mengirim: " + err;
+        document.getElementById("status").innerText = "Gagal kirim lokasi: " + err;
       });
     }
 
-    function onSuccess(pos) {
-      const { latitude, longitude, accuracy } = pos.coords;
-      const ts = new Date(pos.timestamp).toLocaleString("id-ID");
-      document.getElementById("status").innerText =
-        `📍 Lokasi ditemukan:\nLat: ${latitude}\nLng: ${longitude}\nAkurasi: ±${Math.round(accuracy)} m\nMengirim ke server...`;
-      sendData(latitude, longitude, accuracy, ts);
-    }
-
-    function onError(err) {
-      document.getElementById("status").innerText = "❌ Tidak bisa ambil lokasi: " + err.message;
-    }
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(onSuccess, onError, { enableHighAccuracy: true });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => kirimLokasi(pos.coords.latitude, pos.coords.longitude),
+        err => document.getElementById("status").innerText = "Gagal akses lokasi: " + err.message
+      );
     } else {
-      document.getElementById("status").innerText = "❌ Browser tidak mendukung geolocation.";
+      document.getElementById("status").innerText = "Browser tidak mendukung geolocation.";
     }
   </script>
 </body>
