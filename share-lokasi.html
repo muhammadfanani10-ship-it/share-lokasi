@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bagikan Lokasi ke WhatsApp (Dengan Izin)</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; line-height: 1.5; }
+    button { padding: 12px 16px; border: 0; border-radius: 12px; cursor: pointer; }
+    #status { margin: 12px 0; }
+    .row { margin: 8px 0; }
+    .box { padding: 12px; border: 1px solid #ccc; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Bagikan Lokasi ke WhatsApp</h1>
+  <p>Halaman ini akan meminta <b>izin lokasi</b>. Setelah itu, tekan tombol untuk mengirim lokasimu ke WhatsApp.</p>
+
+  <div id="status" class="row">Menunggu izin lokasi…</div>
+
+  <div class="box">
+    <div class="row">Latitude: <span id="lat">-</span></div>
+    <div class="row">Longitude: <span id="lng">-</span></div>
+    <div class="row">Akurasi (± m): <span id="acc">-</span></div>
+    <div class="row">Waktu: <span id="ts">-</span></div>
+    <div class="row"><a id="gmap" href="#" target="_blank" rel="noopener">Buka di Google Maps</a></div>
+  </div>
+
+  <div class="row">
+    <!-- Ganti 62812xxxxxxx dengan nomor WhatsApp penerima (format internasional tanpa +).
+         Atau kosongkan untuk membuka WhatsApp dan memilih kontak secara manual. -->
+    <input id="waNumber" placeholder="Nomor WA tujuan, mis. 62812xxxxxxx" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;">
+  </div>
+
+  <button id="sendBtn" disabled>Kirim Lokasi via WhatsApp</button>
+
+  <script>
+    const el = id => document.getElementById(id);
+    let last = null;
+
+    function formatTS(ms){
+      const d = new Date(ms);
+      return d.toLocaleString('id-ID');
+    }
+
+    function updateUI(pos){
+      const { latitude, longitude, accuracy } = pos.coords;
+      last = { latitude, longitude, accuracy, ts: pos.timestamp };
+      el('lat').textContent = latitude.toFixed(6);
+      el('lng').textContent = longitude.toFixed(6);
+      el('acc').textContent = Math.round(accuracy);
+      el('ts').textContent = formatTS(pos.timestamp);
+      const mapUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      el('gmap').href = mapUrl;
+      el('sendBtn').disabled = false;
+      el('status').textContent = 'Lokasi siap dikirim.';
+    }
+
+    function onError(err){
+      el('status').textContent = 'Gagal mendapatkan lokasi: ' + err.message +
+        '. Pastikan GPS/Location aktif dan beri izin pada browser.';
+    }
+
+    if ('geolocation' in navigator){
+      navigator.geolocation.getCurrentPosition(updateUI, onError, {
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 0
+      });
+    } else {
+      el('status').textContent = 'Perangkat ini tidak mendukung Geolocation.';
+    }
+
+    el('sendBtn').addEventListener('click', () => {
+      if(!last){ return; }
+      const { latitude, longitude, accuracy, ts } = last;
+      const mapUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      const text =
+        `Ini lokasiku sekarang:%0A- Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}%0A- Akurasi: ±${Math.round(accuracy)} m%0A- Waktu: ${formatTS(ts)}%0A${encodeURIComponent(mapUrl)}`;
+      const number = el('waNumber').value.trim();
+      const base = number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`;
+      const url = base + text;
+      window.location.href = url;
+    });
+  </script>
+</body>
+</html>
