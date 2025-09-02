@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Share Lokasi</title>
 </head>
 <body>
@@ -10,34 +9,32 @@
   <p id="status">Mohon izinkan akses lokasi.</p>
 
   <script>
-    // Ganti dengan URL Web App dari Google Script
+    // Ganti ini dengan URL Web App Google Script kamu
     const scriptURL = "https://script.google.com/macros/s/AKfycbzeGTf6aVjR7dgFiHmXjGLKFcmEa1XqUrtTm6Q7OlX8mFawdl2K3zwjcBDnUKNU_Bo/exec";
 
     function kirimLokasi(lat, lon) {
       fetch(scriptURL, {
         method: "POST",
+        mode: "no-cors",  // agar tidak error karena CORS
         body: JSON.stringify({ latitude: lat, longitude: lon }),
         headers: { "Content-Type": "application/json" }
       })
-      .then(res => res.text())
-      .then(txt => {
-        document.getElementById("status").innerText = "Lokasi berhasil dikirim!";
+      .then(() => {
+        document.getElementById("status").innerText = "✅ Lokasi berhasil dikirim!";
       })
       .catch(err => {
-        document.getElementById("status").innerText = "Gagal kirim lokasi: " + err;
+        document.getElementById("status").innerText = "❌ Gagal kirim lokasi: " + err;
       });
     }
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => kirimLokasi(pos.coords.latitude, pos.coords.longitude),
-        err => document.getElementById("status").innerText = "Gagal akses lokasi: " + err.message
+        err => document.getElementById("status").innerText = "❌ Gagal ambil lokasi: " + err.message
       );
     } else {
-      document.getElementById("status").innerText = "Browser tidak mendukung geolocation.";
+      document.getElementById("status").innerText = "❌ Browser tidak mendukung geolocation.";
     }
   </script>
 </body>
 </html>
-
-
