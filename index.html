@@ -7,16 +7,16 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 30px; background:#f9f9f9; }
     h1 { color:#333; }
-    #status { margin-top:20px; font-weight:bold; }
+    #status { margin-top:20px; font-weight:bold; white-space: pre-line; }
   </style>
 </head>
 <body>
   <h1>Bagikan Lokasi Anda</h1>
-  <p>Halaman ini akan meminta <b>izin lokasi</b>. Setelah diizinkan, lokasi Anda otomatis terkirim ke server.</p>
-  <p id="status">Menunggu izin lokasi...</p>
+  <p>Silakan klik <b>Izinkan</b> saat browser meminta akses lokasi. Data akan otomatis tersimpan.</p>
+  <p id="status">⏳ Menunggu izin lokasi...</p>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYyi-mj7lIFHu4jiAs1NiqKXM2nuuSagrPEFcBwvDXuwW1I0uE8vgdwRdJFhelOR-N/exec"; // ganti dengan URL Web App kamu
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJdhZRvF-3LPOWxLgkOXpWzSGo5UlgAWv9h4vn4luaid4WQdNtHQagEOmJrD-iqvcv/exec"; // ganti dengan URL Web App
 
     function sendData(lat, lng, acc, ts) {
       fetch(SCRIPT_URL, {
@@ -31,20 +31,27 @@
         headers: { "Content-Type": "application/json" }
       })
       .then(r => r.text())
-      .then(txt => document.getElementById("status").innerText = "✅ Lokasi terkirim: " + txt)
-      .catch(err => document.getElementById("status").innerText = "❌ Error: " + err);
+      .then(txt => {
+        document.getElementById("status").innerText =
+          "✅ Lokasi berhasil terkirim!\n" +
+          "Latitude: " + lat + "\nLongitude: " + lng +
+          "\nAkurasi: ±" + acc + " m\nWaktu: " + ts + "\n\nRespon server: " + txt;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "❌ Gagal mengirim: " + err;
+      });
     }
 
     function onSuccess(pos) {
       const { latitude, longitude, accuracy } = pos.coords;
       const ts = new Date(pos.timestamp).toLocaleString("id-ID");
-      document.getElementById("status").innerText = 
-        `📍 Lokasi: ${latitude}, ${longitude} (±${Math.round(accuracy)} m) pada ${ts}\nMengirim ke server...`;
+      document.getElementById("status").innerText =
+        `📍 Lokasi ditemukan:\nLat: ${latitude}\nLng: ${longitude}\nAkurasi: ±${Math.round(accuracy)} m\nMengirim ke server...`;
       sendData(latitude, longitude, accuracy, ts);
     }
 
     function onError(err) {
-      document.getElementById("status").innerText = "❌ Gagal: " + err.message;
+      document.getElementById("status").innerText = "❌ Tidak bisa ambil lokasi: " + err.message;
     }
 
     if ("geolocation" in navigator) {
